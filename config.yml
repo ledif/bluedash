@@ -4,9 +4,9 @@ repos:
     repo: vauxite
     workflow: build.yml
 
-  - org: winblues
-    repo: blue95
-    workflow: build.yml
+  #- org: winblues
+  #  repo: blue95
+  #  workflow: build.yml
 
 # Pinned images: check specific tags on GHCR directly
 images:
