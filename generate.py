@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """bluedash — static dashboard for bootc image build status."""
 
+import base64
 import os
 import re
 import sys
@@ -69,12 +70,24 @@ def recipe_to_image(filename):
     return filename
 
 
-def parse_job_image_name(job_name):
-    """'Build image (vauxite-base.yml)' → 'vauxite-base'"""
+def parse_job_recipe(job_name):
+    """'Build image (vauxite-base.yml)' → 'vauxite-base.yml'"""
     m = re.search(r"\(([^)]+)\)", job_name)
-    if m:
-        return recipe_to_image(m.group(1))
-    return None
+    return m.group(1) if m else None
+
+
+def get_recipe_image_name(org, repo, recipe_filename):
+    """Fetch the recipe file and return the image name from its 'name:' field.
+    Falls back to stripping the .yml extension if the fetch fails."""
+    try:
+        data = gh_get(f"/repos/{org}/{repo}/contents/recipes/{recipe_filename}")
+        content = base64.b64decode(data["content"]).decode("utf-8")
+        recipe = yaml.safe_load(content)
+        if recipe and recipe.get("name"):
+            return recipe["name"]
+    except Exception as e:
+        print(f"  Warning: could not read recipe {recipe_filename}: {e}", file=sys.stderr)
+    return recipe_to_image(recipe_filename)
 
 
 def get_latest_run(org, repo, workflow):
@@ -158,8 +171,9 @@ def fetch_repo_data(cfg):
     # Build per-image entries from matrix jobs
     images = {}
     for job in jobs:
-        image_name = parse_job_image_name(job["name"])
-        if image_name:
+        recipe_filename = parse_job_recipe(job["name"])
+        if recipe_filename:
+            image_name = get_recipe_image_name(org, repo, recipe_filename)
             images[image_name] = {
                 "name": image_name,
                 "conclusion": job["conclusion"],
