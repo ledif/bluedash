@@ -1,0 +1,18 @@
+# Tracked repos: image variants are auto-discovered from matrix jobs
+repos:
+  - org: winblues
+    repo: vauxite
+    workflow: build.yml
+
+# Pinned images: check specific tags on GHCR directly
+images:
+  - org: ublue-os
+    image: bazzite
+    tags:
+      - stable
+      - latest
+  - org: ublue-os
+    image: bluefin
+    tags:
+      - latest
+      - stable

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bluedash</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d1117;
+      --surface:    #161b22;
+      --border:     #30363d;
+      --text:       #e6edf3;
+      --muted:      #7d8590;
+      --link:       #58a6ff;
+      --success:    #3fb950;
+      --failure:    #f85149;
+      --pending:    #e3b341;
+      --neutral:    #6e7681;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.85em;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    header .generated {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    section + section { margin-top: 40px; }
+
+    section > h2 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Card grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* ── Card header ── */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      min-width: 0;
+    }
+
+    .card-run {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── Status dot ── */
+    .dot {
+      flex-shrink: 0;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    .dot-success { background: var(--success); }
+    .dot-failure { background: var(--failure); }
+    .dot-pending {
+      background: var(--pending);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .dot-neutral  { background: var(--neutral); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr {
+      background: rgba(255,255,255,0.02);
+    }
+
+    th {
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      padding: 6px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Build result icons ── */
+    .icon-success { color: var(--success); font-weight: 700; }
+    .icon-failure { color: var(--failure); font-weight: 700; }
+    .icon-pending { color: var(--pending); }
+    .icon-neutral { color: var(--neutral); }
+
+    /* ── Tags ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .tag {
+      display: inline-block;
+      background: rgba(88,166,255,0.08);
+      border: 1px solid rgba(88,166,255,0.2);
+      border-radius: 12px;
+      padding: 1px 9px;
+      font-size: 0.72rem;
+      color: var(--link);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      white-space: nowrap;
+    }
+
+    /* ── Digest ── */
+    .digest {
+      color: var(--muted);
+      font-size: 0.78em;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      padding: 14px 16px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 28px 24px 20px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    @media (max-width: 640px) {
+      main { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#x1FAD0; bluedash</h1>
+  <span class="generated">Generated {{ generated_at }}</span>
+</header>
+
+<main>
+
+  {# ── Tracked repos ── #}
+  {% if repos %}
+  <section>
+    <h2>Tracked Repos</h2>
+    <div class="grid">
+      {% for repo in repos %}
+
+        {# Determine overall status for the dot #}
+        {% set conclusion = repo.run.conclusion if repo.run else None %}
+        {% set status     = repo.run.status     if repo.run else None %}
+        {% if conclusion == "success" %}
+          {% set dot_class = "dot-success" %}
+        {% elif conclusion in ["failure", "cancelled", "timed_out"] %}
+          {% set dot_class = "dot-failure" %}
+        {% elif status in ["in_progress", "queued", "waiting"] %}
+          {% set dot_class = "dot-pending" %}
+        {% else %}
+          {% set dot_class = "dot-neutral" %}
+        {% endif %}
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="dot {{ dot_class }}"></span>
+            <a href="https://github.com/{{ repo.org }}/{{ repo.repo }}">
+              {{ repo.org }}/<strong>{{ repo.repo }}</strong>
+            </a>
+          </div>
+          <div class="card-run">
+            {% if repo.run %}
+              <a href="{{ repo.run.html_url }}" style="color:var(--muted)">
+                {{ repo.run.created_at_relative }}
+              </a>
+            {% else %}
+              no runs found
+            {% endif %}
+          </div>
+        </div>
+
+        {% if repo.images %}
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th style="width:48px">Build</th>
+              <th>Tags on GHCR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for image in repo.images %}
+            <tr>
+              <td><code>{{ image.name }}</code></td>
+              <td>
+                {% if image.conclusion == "success" %}
+                  <a href="{{ image.html_url }}" class="icon-success" title="success">✓</a>
+                {% elif image.conclusion in ["failure", "cancelled", "timed_out"] %}
+                  <a href="{{ image.html_url }}" class="icon-failure" title="{{ image.conclusion }}">✗</a>
+                {% elif image.status in ["in_progress", "queued", "waiting"] %}
+                  <a href="{{ image.html_url }}" class="icon-pending" title="running">◌</a>
+                {% else %}
+                  <span class="icon-neutral">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="tags">
+                  {% for tag_name, tag_info in image.tags.items() %}
+                    <span class="tag" title="pushed {{ tag_info.updated_at_relative }}">{{ tag_name }}</span>
+                  {% else %}
+                    <span style="color:var(--muted)">—</span>
+                  {% endfor %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty">No image data available.</div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ── Pinned images ── #}
+  {% if pinned_images %}
+  <section>
+    <h2>Pinned Images</h2>
+    <div class="grid">
+      {% for pinned in pinned_images %}
+
+        {% set missing = pinned.tags | rejectattr("found") | list | length %}
+        {% if missing > 0 %}
+          {% set dot_class = "dot-failure" %}
+        {% else %}
+          {% set dot_class = "dot-success" %}
+        {% endif %}
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="dot {{ dot_class }}"></span>
+            <a href="https://github.com/{{ pinned.org }}/{{ pinned.image }}">
+              {{ pinned.org }}/<strong>{{ pinned.image }}</strong>
+            </a>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Pushed</th>
+              <th>Digest</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tag in pinned.tags %}
+            <tr>
+              <td>
+                {% if tag.html_url %}
+                  <a href="{{ tag.html_url }}"><code>{{ tag.tag }}</code></a>
+                {% else %}
+                  <code>{{ tag.tag }}</code>
+                {% endif %}
+              </td>
+              <td style="color:var(--muted); white-space:nowrap">
+                {% if not tag.found %}
+                  <span style="color:var(--failure)">not found</span>
+                {% else %}
+                  {{ tag.updated_at_relative }}
+                {% endif %}
+              </td>
+              <td>
+                {% if tag.digest %}
+                  <code class="digest">{{ tag.digest }}</code>
+                {% else %}
+                  <span style="color:var(--muted)">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+
+<footer>
+  <a href="https://github.com/ledif/bluedash">bluedash</a>
+</footer>
+
+</body>
+</html>
